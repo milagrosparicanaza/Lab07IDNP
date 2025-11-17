@@ -12,13 +12,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.listapacientesanemia.datastore.ThemeDataStore
 import com.example.listapacientesanemia.ui.ListaPacientesScreen
 import com.example.listapacientesanemia.ui.ThemeScreen
+import com.example.listapacientesanemia.ui.MenuScreen
+import com.example.listapacientesanemia.ui.*
 
-// ✅ Modelo de datos de Paciente
 data class Paciente(
     val nombre: String,
     val edad: Int,
     val avatarUrl: String,
-    val monitoreoActivo: Boolean // NUEVO: estado de detección de anemia
+    val monitoreoActivo: Boolean
 )
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +30,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            // Observa si el tema debe ser oscuro
             val isDark by themeStore.themeFlow.collectAsState(initial = false)
 
             MaterialTheme(
@@ -39,8 +39,12 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = "home"
+                    startDestination = "menu"
                 ) {
+
+                    composable("menu") {
+                        MenuScreen(navController)
+                    }
 
                     composable("home") {
                         ListaPacientesScreen(navController)
@@ -52,7 +56,13 @@ class MainActivity : ComponentActivity() {
                             themeDataStore = themeStore
                         )
                     }
+
+                    // NUEVAS pantallas vacías (las llenaremos después)
+                    composable("control_anemia") { ControlAnemiaScreen() }
+                    composable("prueba_anemia") { PruebaAnemiaScreen() }
+                    composable("prevencion") { PrevencionScreen() }
                 }
+
             }
         }
     }
