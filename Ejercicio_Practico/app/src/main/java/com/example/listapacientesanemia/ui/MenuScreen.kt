@@ -30,7 +30,7 @@ fun MenuScreen(navController: NavController) {
             )
             MenuButton(
                 text = "Control de Anemia",
-                onClick = { navController.navigate("control_anemia") }
+                onClick = { navController.navigate("listaResultados") }
             )
         }
 
@@ -42,14 +42,15 @@ fun MenuScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             MenuButton(
-                text = "Prueba de Anemia",
-                onClick = { navController.navigate("prueba_anemia") }
+                text = "Registrar Resultado",
+                onClick = { navController.navigate("registroResultado") }
             )
             MenuButton(
                 text = "Prevención de Anemia",
                 onClick = { navController.navigate("prevencion") }
             )
         }
+
     }
 }
 

@@ -14,6 +14,15 @@ import com.example.listapacientesanemia.ui.ListaPacientesScreen
 import com.example.listapacientesanemia.ui.ThemeScreen
 import com.example.listapacientesanemia.ui.MenuScreen
 import com.example.listapacientesanemia.ui.*
+import com.example.listapacientesanemia.ui.ControlAnemiaScreen
+import com.example.listapacientesanemia.ui.PruebaAnemiaScreen
+import com.example.listapacientesanemia.ui.PrevencionScreen
+import com.example.listapacientesanemia.model.AppDatabase
+import com.example.listapacientesanemia.model.AnemiaRepository
+import com.example.listapacientesanemia.ui.ListaResultadosScreen
+import com.example.listapacientesanemia.ui.RegistroResultadoScreen
+import com.example.listapacientesanemia.model.*
+
 
 data class Paciente(
     val nombre: String,
@@ -27,6 +36,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val themeStore = ThemeDataStore(this)
+        val db = AppDatabase.getDatabase(this)
+        val repo = AnemiaRepository(db.anemiaDao())
 
         setContent {
 
@@ -57,10 +68,18 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // NUEVAS pantallas vacías (las llenaremos después)
+
                     composable("control_anemia") { ControlAnemiaScreen() }
                     composable("prueba_anemia") { PruebaAnemiaScreen() }
                     composable("prevencion") { PrevencionScreen() }
+
+                    composable("registroResultado") {
+                        RegistroResultadoScreen(navController, repo)
+                    }
+
+                    composable("listaResultados") {
+                        ListaResultadosScreen(navController, repo)
+                    }
                 }
 
             }
