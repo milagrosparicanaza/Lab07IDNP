@@ -8,9 +8,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AnemiaDao {
 
-    @Insert
-    suspend fun insertResultado(resultado: AnemiaResult)
+    @Query("SELECT * FROM anemia_results ORDER BY fecha DESC")
+    fun getAllResultados(): Flow<List<AnemiaResult>>
 
-    @Query("SELECT * FROM anemia_results ORDER BY id DESC")
-    fun obtenerResultados(): Flow<List<AnemiaResult>>
+    @Insert
+    suspend fun insertResultado(result: AnemiaResult)
 }
+

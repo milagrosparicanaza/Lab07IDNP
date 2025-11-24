@@ -22,6 +22,10 @@ import com.example.listapacientesanemia.model.AnemiaRepository
 import com.example.listapacientesanemia.ui.ListaResultadosScreen
 import com.example.listapacientesanemia.ui.RegistroResultadoScreen
 import com.example.listapacientesanemia.model.*
+import androidx.lifecycle.ViewModelProvider
+import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModel
+import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModelFactory
+
 
 
 data class Paciente(
@@ -36,8 +40,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val themeStore = ThemeDataStore(this)
+
+        // ROOM
         val db = AppDatabase.getDatabase(this)
         val repo = AnemiaRepository(db.anemiaDao())
+
+        // VIEWMODEL
+        val anemiaViewModel = ViewModelProvider(
+            this,
+            AnemiaViewModelFactory(repo)
+        )[AnemiaViewModel::class.java]
 
         setContent {
 
@@ -46,6 +58,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = if (isDark) darkColorScheme() else lightColorScheme()
             ) {
+
                 val navController = rememberNavController()
 
                 NavHost(
@@ -62,26 +75,35 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("theme") {
-                        ThemeScreen(
+                        ThemeScreen(navController, themeStore)
+                    }
+
+                    composable("control_anemia") {
+                        ControlAnemiaScreen(navController)
+                    }
+
+                    composable("prueba_anemia") {
+                        PruebaAnemiaScreen()
+                    }
+
+                    composable("prevencion") {
+                        PrevencionScreen()
+                    }
+
+                    composable("registroResultado") {
+                        RegistroResultadoScreen(
                             navController = navController,
-                            themeDataStore = themeStore
+                            viewModel = anemiaViewModel
                         )
                     }
 
-
-                    composable("control_anemia") { ControlAnemiaScreen() }
-                    composable("prueba_anemia") { PruebaAnemiaScreen() }
-                    composable("prevencion") { PrevencionScreen() }
-
-                    composable("registroResultado") {
-                        RegistroResultadoScreen(navController, repo)
-                    }
-
                     composable("listaResultados") {
-                        ListaResultadosScreen(navController, repo)
+                        ListaResultadosScreen(
+                            navController = navController,
+                            viewModel = anemiaViewModel
+                        )
                     }
                 }
-
             }
         }
     }

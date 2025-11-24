@@ -9,28 +9,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.listapacientesanemia.model.AnemiaRepository
+import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModel
+import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModelFactory
 
 @Composable
-fun ListaResultadosScreen(navController: NavController, repo: AnemiaRepository) {
+fun ListaResultadosScreen(
+    navController: NavController,
+    viewModel: AnemiaViewModel
+) {
 
-    val resultados by repo.resultados.collectAsState(initial = emptyList())
+    val resultados by viewModel.resultados.collectAsState()
 
-    Column(modifier = Modifier.padding(20.dp)) {
-        Text("Resultados de Anemia", style = MaterialTheme.typography.titleLarge)
-
-        Spacer(Modifier.height(20.dp))
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(resultados) { r ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Paciente: ${r.paciente}")
-                        Text("Hemoglobina: ${r.hemoglobina}")
-                        Text("Diagnóstico: ${r.resultado}")
-                        Text("Fecha: ${r.fecha}")
-                    }
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(resultados) { item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Hemoglobina: ${item.hemoglobina} g/dL")
+                    Text("Fecha: ${item.fecha}")
                 }
             }
         }
     }
 }
+

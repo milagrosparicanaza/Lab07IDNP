@@ -1,68 +1,118 @@
 package com.example.listapacientesanemia.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.listapacientesanemia.model.AnemiaResult
-import com.example.listapacientesanemia.model.AnemiaRepository
-import kotlinx.coroutines.launch
+import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModel
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @Composable
-fun RegistroResultadoScreen(navController: NavController, repo: AnemiaRepository) {
+fun RegistroResultadoScreen(
+    navController: NavController,
+    viewModel: AnemiaViewModel
+) {
 
-    var nombre by remember { mutableStateOf("") }
-    var hemoglobina by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+    var nombrePaciente by remember { mutableStateOf("") }
+    var hemoglobinaInput by remember { mutableStateOf("") }
+    var resultado by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.padding(20.dp)) {
+    // Generar fecha actual
+    val fechaActual = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+    }
 
-        Text("Registrar resultado", style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(20.dp))
+    fun calcularResultado(hb: Float): String {
+        return when {
+            hb >= 12 -> "Normal"
+            hb >= 10 -> "Anemia Leve"
+            hb >= 8 -> "Anemia Moderada"
+            else -> "Anemia Severa"
+        }
+    }
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+
+        Text(
+            text = "Registrar Resultado de Anemia",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        // NOMBRE
         OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Paciente") },
+            value = nombrePaciente,
+            onValueChange = { nombrePaciente = it },
+            label = { Text("Nombre del paciente") },
             modifier = Modifier.fillMaxWidth()
         )
 
+        // HEMOGLOBINA
         OutlinedTextField(
-            value = hemoglobina,
-            onValueChange = { hemoglobina = it },
+            value = hemoglobinaInput,
+            onValueChange = { hemoglobinaInput = it },
             label = { Text("Hemoglobina (g/dL)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(20.dp))
-
+        // BOTÓN CALCULAR
         Button(
-            modifier = Modifier.fillMaxWidth(),
             onClick = {
-                val valor = hemoglobina.toDoubleOrNull() ?: 0.0
-                val resultado = if (valor < 12) "Anemia" else "Normal"
+                if (hemoglobinaInput.isNotBlank()) {
+                    val hb = hemoglobinaInput.toFloat()
+                    resultado = calcularResultado(hb)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Calcular resultado")
+        }
 
-                val fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+        // Mostrar resultado
+        if (resultado.isNotEmpty()) {
+            Text(
+                text = "Resultado: $resultado",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "Fecha: $fechaActual",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
 
-                scope.launch {
-                    repo.guardarResultado(
-                        AnemiaResult(
-                            paciente = nombre,
-                            hemoglobina = valor,
-                            resultado = resultado,
-                            fecha = fecha
-                        )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // BOTÓN GUARDAR
+        Button(
+            onClick = {
+                if (
+                    nombrePaciente.isNotBlank() &&
+                    hemoglobinaInput.isNotBlank() &&
+                    resultado.isNotBlank()
+                ) {
+                    viewModel.guardarResultado(
+                        paciente = nombrePaciente,
+                        nivelHemoglobina = hemoglobinaInput.toFloat(),
+                        resultado = resultado,
+                        fecha = fechaActual
                     )
                     navController.navigate("listaResultados")
                 }
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Guardar Resultado")
+            Text("Guardar resultado")
         }
     }
 }
