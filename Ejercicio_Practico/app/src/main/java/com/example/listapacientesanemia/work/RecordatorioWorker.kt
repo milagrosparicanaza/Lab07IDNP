@@ -27,9 +27,9 @@ class RecordatorioWorker(
 
         crearCanalNotificacion()
 
-        // 🔥 Intent para abrir la app al tocar la notificación
+        
         val intent = Intent(applicationContext, MainActivity::class.java)
-        intent.putExtra("open", "registroResultado") // Para navegar si deseas
+        intent.putExtra("open", "registroResultado")
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,
             0,
@@ -37,14 +37,14 @@ class RecordatorioWorker(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // 🔥 Notificación profesional
+
         val builder = NotificationCompat.Builder(applicationContext, "recordatorio_channel")
-            .setSmallIcon(R.drawable.baseline_health_and_safety_24)   // Usa tu icono
+            .setSmallIcon(R.drawable.baseline_health_and_safety_24)
             .setContentTitle("Control de Hemoglobina")
             .setContentText("Ya pasó una semana. Registra tu nuevo nivel para seguir tu monitoreo.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)                           // se cierra al tocar
-            .setContentIntent(pendingIntent)               // abre la app
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
                     "Ya pasó una semana desde tu último registro. Mantén tu monitoreo actualizado ingresando tu nivel actual de hemoglobina."
