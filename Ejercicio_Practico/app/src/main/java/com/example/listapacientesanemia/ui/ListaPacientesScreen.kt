@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.listapacientesanemia.Paciente
+import com.example.listapacientesanemia.model.Paciente
 
 @Composable
 fun ListaPacientesScreen(navController: NavController) {

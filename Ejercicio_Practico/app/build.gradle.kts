@@ -76,8 +76,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.compose.runtime:runtime-livedata")
 
-
-
+    implementation("androidx.compose.material:material-icons-extended")
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
