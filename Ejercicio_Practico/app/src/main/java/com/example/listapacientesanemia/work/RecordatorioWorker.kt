@@ -27,7 +27,7 @@ class RecordatorioWorker(
 
         crearCanalNotificacion()
 
-        
+
         val intent = Intent(applicationContext, MainActivity::class.java)
         intent.putExtra("open", "registroResultado")
         val pendingIntent = PendingIntent.getActivity(
