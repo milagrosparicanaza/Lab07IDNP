@@ -97,6 +97,18 @@ fun MenuScreen(navController: NavController) {
         ) {
             Text(text = "Cerrar sesión", color = Color(0xFF1B5E20))
         }
+
+        //Temporizador
+        Button(
+            onClick = { navController.navigate("temporizador") },
+            shape = RoundedCornerShape(20.dp),
+            /*colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE8EAF6)
+            ),*/
+            modifier = Modifier.width(220.dp)
+        ) {
+            Text("Temporizador")
+        }
     }
 }
 
