@@ -145,6 +145,9 @@ class MainActivity : ComponentActivity() {
                             desactivarNotificaciones = { cancelarRecordatorio() }
                         )
                     }
+                    composable("temporizador") {
+                        TemporizadorScreen(navController)
+                    }
                 }
             }
         }
