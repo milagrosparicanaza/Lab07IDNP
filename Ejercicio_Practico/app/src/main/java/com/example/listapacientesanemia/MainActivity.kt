@@ -24,11 +24,42 @@ import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModel
 import com.example.listapacientesanemia.ui.viewmodel.AnemiaViewModelFactory
 import com.example.listapacientesanemia.work.RecordatorioWorker
 import java.util.concurrent.TimeUnit
+import android.content.pm.PackageManager
+import android.os.*
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 
 class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    // ========= TEMPORIZADOR =========
+
+    // ID del canal y notificación
+    private val timerChannelId = "timer_channel"
+    private val timerNotificationId = 2001
+
+    // Manejador del reloj
+    private val handler = Handler(Looper.getMainLooper())
+    private var timerRunning = false
+    private var startTime = 0L
+
+    // Se ejecuta cada 1 segundo
+    private val timerRunnable = object : Runnable {
+        override fun run() {
+            if (timerRunning) {
+                val elapsed = (SystemClock.elapsedRealtime() - startTime) / 1000
+                updateTimerNotification(elapsed)
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -141,4 +172,71 @@ class MainActivity : ComponentActivity() {
 
         Log.d("WORKER_STATUS", "Recordatorio DESACTIVADO")
     }
+
+    private fun createTimerChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                timerChannelId,
+                "Temporizador",
+                android.app.NotificationManager.IMPORTANCE_LOW
+            )
+            channel.description = "Notificación persistente del temporizador"
+
+            val manager = getSystemService(android.app.NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    fun startTimer() {
+        if (timerRunning) return
+
+        createTimerChannel()
+
+        timerRunning = true
+        startTime = SystemClock.elapsedRealtime()
+
+        updateTimerNotification(0)
+        handler.post(timerRunnable)
+
+        Log.d("TIMER", "Temporizador iniciado")
+    }
+
+    fun stopTimer() {
+        timerRunning = false
+        handler.removeCallbacks(timerRunnable)
+
+        NotificationManagerCompat.from(this).cancel(timerNotificationId)
+
+        Log.d("TIMER", "Temporizador detenido")
+    }
+
+    private fun updateTimerNotification(seconds: Long) {
+
+        // 🔥 Validar permiso en Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                Log.e("NOTI", "No tienes permiso de notificaciones")
+                return
+            }
+        }
+
+        val h = seconds / 3600
+        val m = (seconds % 3600) / 60
+        val s = seconds % 60
+        val time = String.format("%02d:%02d:%02d", h, m, s)
+
+        val notification = NotificationCompat.Builder(this, timerChannelId)
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setContentTitle("Temporizador activo")
+            .setContentText("Transcurrido: $time")
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .build()
+
+        NotificationManagerCompat.from(this)
+            .notify(timerNotificationId, notification)
+    }
+
+
 }
