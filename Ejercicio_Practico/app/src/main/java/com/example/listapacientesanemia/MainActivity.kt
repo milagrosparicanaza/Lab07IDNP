@@ -31,8 +31,18 @@ import com.example.listapacientesanemia.work.*
 import java.util.concurrent.TimeUnit
 import android.app.PendingIntent
 import android.content.Intent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+
 
 class MainActivity : ComponentActivity() {
+    private var ultimaFechaRegistro: Long = 0L
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -59,6 +69,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         if (intent?.getBooleanExtra("STOP_TIMER", false) == true) {
             stopTimer()
         }
@@ -75,6 +87,10 @@ class MainActivity : ComponentActivity() {
         // ROOM
         val db = AppDatabase.getDatabase(this)
         val repo = AnemiaRepository(db.anemiaDao())
+        lifecycleScope.launch(Dispatchers.IO) {
+            cargarUltimaFechaRegistro(repo)
+        }
+
 
         // ViewModel
         val anemiaViewModel = AnemiaViewModelFactory(repo)
@@ -183,32 +199,68 @@ class MainActivity : ComponentActivity() {
         val s = seconds % 60
         val time = String.format("%02d:%02d:%02d", h, m, s)
 
-        // Intent para detener desde la notificación
-        val stopIntent = Intent(this, TimerReceiver::class.java).apply {
-            action = "STOP_TIMER"
-        }
-
-        val stopPendingIntent = PendingIntent.getBroadcast(
-            this,
-            0,
-            stopIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val tiempoUltimo = tiempoDesdeUltimoRegistro()
 
         val notification = NotificationCompat.Builder(this, timerChannelId)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentTitle("Temporizador activo")
             .setContentText("Transcurrido: $time")
-            .setOngoing(true)
-            .addAction(
-                android.R.drawable.ic_media_pause,
-                "Detener",
-                stopPendingIntent  // ← AHORA CORRECTO
+            .setStyle(
+                NotificationCompat.BigTextStyle().bigText(
+                    "Transcurrido: $time\nÚltimo registro: $tiempoUltimo"
+                )
             )
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .build()
 
         NotificationManagerCompat.from(this)
             .notify(timerNotificationId, notification)
     }
+
+
+
+    private suspend fun cargarUltimaFechaRegistro(repo: AnemiaRepository) {
+        val ultimo = repo.getUltimoResultado()
+        if (ultimo != null) {
+            val fecha = ultimo.fecha
+            val formatos = listOf(
+                "dd/MM/yyyy",
+                "yyyy-MM-dd",
+                "yyyy-MM-dd HH:mm",
+                "dd-MM-yyyy"
+            )
+
+            for (f in formatos) {
+                try {
+                    val sdf = SimpleDateFormat(f, Locale.getDefault())
+                    ultimaFechaRegistro = sdf.parse(fecha)?.time ?: continue
+                    return
+                } catch (_: Exception) { }
+            }
+
+            ultimaFechaRegistro = 0L // si no se pudo interpretar
+        }
+    }
+    private fun tiempoDesdeUltimoRegistro(): String {
+        if (ultimaFechaRegistro == 0L) return "Sin registros todavía"
+
+        val ahora = System.currentTimeMillis()
+        val diff = ahora - ultimaFechaRegistro
+
+        val dias = diff / (1000 * 60 * 60 * 24)
+        val horas = (diff / (1000 * 60 * 60)) % 24
+        val minutos = (diff / (1000 * 60)) % 60
+
+        return when {
+            dias > 0 -> "Hace $dias días $horas horas"
+            horas > 0 -> "Hace $horas horas $minutos min"
+            minutos > 0 -> "Hace $minutos min"
+            else -> "Hace menos de 1 min"
+        }
+    }
+
+
+
 
 }

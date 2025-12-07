@@ -13,5 +13,9 @@ interface AnemiaDao {
 
     @Insert
     suspend fun insertResultado(result: AnemiaResult)
+
+    @Query("SELECT * FROM anemia_results ORDER BY id DESC LIMIT 1")
+    suspend fun getUltimoResultado(): AnemiaResult?
+
 }
 

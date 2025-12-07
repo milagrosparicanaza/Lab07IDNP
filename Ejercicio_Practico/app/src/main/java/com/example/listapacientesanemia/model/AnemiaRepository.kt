@@ -12,4 +12,8 @@ class AnemiaRepository(private val dao: AnemiaDao) {
     suspend fun insert(resultado: AnemiaResult) {
         dao.insertResultado(resultado)
     }
+    suspend fun getUltimoResultado(): AnemiaResult? {
+        return dao.getUltimoResultado()
+    }
+
 }
